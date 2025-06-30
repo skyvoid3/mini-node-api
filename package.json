@@ -1,0 +1,11 @@
+{
+  "name": "learnjs",
+  "version": "1.0.0",
+  "description": "learning Node.js",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Narek A",
+  "license": "MIT"
+}
