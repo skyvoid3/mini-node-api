@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",              // Use latest Node-supported JS features
+    "module": "ESNext",              // Use ES Modules
+    "moduleResolution": "node",      // Node module resolution
+    "outDir": "./dist",              // Compiled files output folder
+    "rootDir": "./src",              // Source code root folder
+    "strict": true,                  // Enable all strict type-checking options
+    "esModuleInterop": true,         // Support for CommonJS imports in ES modules
+    "skipLibCheck": true,            // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "allowJs": false                 // Only allow TypeScript files
+  },
+   "ts-node": {
+        "esm": true,
+        "transpileOnly": true
+  },
+  "include": ["src/**/*"],           // Files to include
+  "exclude": ["node_modules", "dist"]
+}
+
