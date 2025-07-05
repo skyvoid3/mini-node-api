@@ -1,23 +1,35 @@
 {
   "compilerOptions": {
-    "target": "ES2021",              // Use latest Node-supported JS features
-    "module": "ESNext",              // Use ES Modules
-    "moduleResolution": "node",      // Node module resolution
-    "outDir": "./dist",              // Compiled files output folder
-    "rootDir": "./src",              // Source code root folder
-    "strict": true,                  // Enable all strict type-checking options
-    "esModuleInterop": true,         // Support for CommonJS imports in ES modules
-    "skipLibCheck": true,            // Skip type checking of declaration files
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "allowJs": false                 // Only allow TypeScript files
+    // Output & Module
+    "target": "ES2021",                  // Modern JS features, Node-compatible
+    "module": "ESNext",                  // Use ES Modules (needed for import/export syntax)
+    "moduleResolution": "node",          // Resolves modules like Node.js does
+    "outDir": "./dist",                  // Output directory for compiled JS
+    "rootDir": "./src",                  // Where your TS source files live
+    "sourceMap": true,                   // Generate .map files for debugging
+
+    // Type System Strictness
+    "strict": true,                      // Enable all strict checks
+    "noImplicitAny": true,               // Force explicit types for params
+    "noImplicitReturns": true,           // Warn if not all code paths return a value
+    "strictFunctionTypes": true,         // Safer function assignment rules
+    "exactOptionalPropertyTypes": true,  // Make `optional?:` distinct from `optional: undefined`
+    "alwaysStrict": true,                // Enforce 'use strict' in emitted code
+
+    // Interop & Module Stuff
+    "esModuleInterop": true,             // Allow CommonJS imports like `import express from 'express'`
+    "resolveJsonModule": true,           // Allow importing .json files
+    "forceConsistentCasingInFileNames": true, // Prevent case-sensitive issues between systems
+    "allowJs": false,                    // Only allow .ts/.tsx files
+    "skipLibCheck": true                 // Speeds up build by skipping type checking of `node_modules`
   },
-   "ts-node": {
-        "esm": true,
-        "transpileOnly": true
+
+  "ts-node": {
+    "esm": true,                         // Needed if you use ES modules
+    "transpileOnly": false              // Enforce full type checking at runtime
   },
-  "include": ["src/**/*"],           // Files to include
-  "exclude": ["node_modules", "dist"]
+
+  "include": ["src/**/*"],              // Include everything in src/
+  "exclude": ["node_modules", "dist"]   // Don't include compiled output or dependencies
 }
 

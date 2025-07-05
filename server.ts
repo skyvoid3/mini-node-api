@@ -1,98 +1,93 @@
-import http, { IncomingMessage } from 'http';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-let users: { id: number; name: string }[] = [];
-
-try {
-    const data = await fs.readFile(path.join(__dirname, 'public', 'users.json'), 'utf8');
-    users = JSON.parse(data);
-} catch (err) {
-    console.log('Error parsing the user.json file', err);
-    process.exit(1);
-}
+import http, { IncomingMessage, ServerResponse } from 'http';
+import {
+    User,
+    loadUsers,
+    jsonMiddleware,
+    getUsersHandler,
+    getUserByIdHandler,
+    createUserHandler,
+    landingPageHandler,
+    notFoundHandler,
+    logClientInfo,
+} from './utils.ts';
 
 import dotenv from 'dotenv';
 dotenv.config();
 
 const PORT = process.env.PORT || 7070;
 
-const server = http.createServer((req, res) => {
-    const { url, method } = req;
-
-    const logClientInfo = (req: IncomingMessage) => {
-        const ip = req.socket.remoteAddress;
-        const ua = req.headers['user-agent'];
-        const referer = req.headers['referer'];
-        const method = req.method;
-        const url = req.url;
-
-        console.log(`--- Request Info ---`);
-        console.log(`[${new Date().toISOString()}] ${ip} ${method} ${url}`);
-        console.log(`User-Agent: ${ua}`);
-        if (referer) console.log(`Referer ${referer}`);
-    };
+async function startServer(): Promise<void> {
+    let users: User[] = [];
 
     try {
-        if (!url) {
-            res.statusCode = 400;
-            res.setHeader('Content-Type', 'application/json');
-            return res.end(JSON.stringify({ error: 'Missing URL' }));
-        }
-
-        if (method === 'GET') {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            if (url === '/') {
-                res.end(JSON.stringify({ usage: 'Available paths are /users /user/[id]' }));
-            } else if (url === '/users') {
-                res.end(JSON.stringify(users));
-            } else if (url.match(/\/users\/([0-9]+)$/)) {
-                const id = url.split('/')[2];
-                const user = users.find((u) => u.id === parseInt(id));
-
-                if (user) {
-                    res.end(JSON.stringify(user));
-                } else {
-                    res.statusCode = 404;
-                    res.end(JSON.stringify({ error: 'User not found' }));
-                }
-            } else {
-                res.statusCode = 404;
-                res.end(JSON.stringify({ error: 'Route not found' }));
-            }
-        } else {
-            res.statusCode = 405;
-            res.end(JSON.stringify({ message: 'Other methods are in production...' }));
-            logClientInfo(req);
-            console.log(`Status Code: ${res.statusCode}`);
-        }
+        users = await loadUsers();
     } catch (err) {
-        console.error('Server Error', err);
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: 'Internal server error' }));
+        console.error('Couldnt load users', err);
+        process.exit(1);
     }
-});
 
-server.listen(PORT, () => {
-    const addr = server.address();
-    console.log('--- Server Info ---');
-    if (addr === null) {
-        console.log('Server not listening yet');
-    } else if (typeof addr === 'string') {
-        console.log(`Listening on ${addr}`);
-    } else if (typeof addr === 'object') {
-        console.log(`Listening on ${addr.address} ${addr.port} (${addr.family})`);
-    } else {
-        console.log(`Listening on port ${PORT}`);
-    }
-});
+    const server = http.createServer((req, res): void => {
+        const { url, method } = req;
+        try {
+            logClientInfo(req, (): void => {
+                jsonMiddleware(
+                    res,
+                    (): ServerResponse<IncomingMessage> | undefined => {
+                        if (!url) {
+                            res.statusCode = 400;
+                            return res.end(
+                                JSON.stringify({ error: 'URL Not Found' }),
+                            );
+                        }
+                        if (url === '/' && method === 'GET') {
+                            landingPageHandler(res);
+                        } else if (url === '/users' && method === 'GET') {
+                            getUsersHandler(res, users);
+                        } else if (
+                            /^\/users\/\d+$/.test(url) &&
+                            method === 'GET'
+                        ) {
+                            getUserByIdHandler(res, url, users);
+                        } else if (url === '/users' && method === 'POST') {
+                            createUserHandler(req, res);
+                        } else {
+                            notFoundHandler(res);
+                        }
+                    },
+                );
+            });
+        } catch (err) {
+            console.error('Server Error', err);
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+    server.listen(PORT, (): void => {
+        const addr = server.address();
+        console.log('\n=== Server Info ===\n');
+        if (addr === null) {
+            console.log('Server not listening yet');
+        } else if (typeof addr === 'string') {
+            console.log(`Listening on ${addr}`);
+        } else if (typeof addr === 'object') {
+            console.log(
+                `Listening on ${addr.address} ${addr.port} (${addr.family})`,
+            );
+        } else {
+            console.log(`Listening on port ${PORT}`);
+        }
+    });
 
-process.on('SIGINT', () => {
-    console.log('\n--- Shutting down the server ---\n');
-    server.close(() => process.exit(0));
+    // Handling signals
+    process.on('SIGINT', (): void => {
+        console.log('\n=== Shutting Down The Server ===\n');
+        server.close();
+        process.exit(0);
+    });
+}
+
+// Starting the server
+startServer().catch((err): void => {
+    console.error('Top-level crash', err);
+    process.exit(1);
 });
