@@ -1,46 +1,10 @@
 [
   {
-    "id": 0,
-    "name": "Artur"
-  },
-  {
     "id": 1,
-    "name": "Jonh"
+    "name": "Pizdo"
   },
   {
     "id": 2,
-    "name": "Mary"
-  },
-  {
-    "id": 3,
-    "name": "Gilbert"
-  },
-  {
-    "id": 4,
-    "name": "Nancy"
-  },
-  {
-    "id": 5,
-    "name": "Frank"
-  },
-  {
-    "id": 5,
-    "name": "Vzgul"
-  },
-  {
-    "id": 6,
-    "name": "Prtik"
-  },
-  {
-    "id": 7,
-    "name": "James"
-  },
-  {
-    "id": 8,
-    "name": "Foo"
-  },
-  {
-    "id": 9,
-    "name": "Bar"
+    "name": "Artak"
   }
 ]

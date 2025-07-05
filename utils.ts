@@ -10,6 +10,7 @@ const UsersFilePath = path.join(__dirname, 'public', 'users.json');
 
 export type User = { id: number; name: string };
 
+
 export async function loadUsers(): Promise<User[]> {
     try {
         const data = await fs.readFile(path.join(__dirname, 'public', 'users.json'), 'utf8');
@@ -69,9 +70,14 @@ export function getBody(req: IncomingMessage): Promise<string> {
 //Route handler for POST /users/
 export async function createUserHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
-        const body = await getBody(req);
-        const newUser: User = JSON.parse(body);
         const users = await loadUsers();
+        
+        const body = await getBody(req);
+        const newUser: User = {
+            id: getNewUserId(users),
+            name: (body.replace(/[\r\n]/g, '')).trim(),
+        };
+
         users.push(newUser);
         await saveNewUser(users);
 
@@ -119,3 +125,11 @@ export const notFoundHandler = (res: ServerResponse): void => {
 export async function saveNewUser(user: User[]): Promise<void> {
     await fs.writeFile(UsersFilePath, JSON.stringify(user, null, 2), 'utf8');
 }
+
+// Get the maximum UserId
+export function getNewUserId(users: User[]): number {
+    return (users.length > 0 ? (Math.max(...users.map((u): number => u.id)) + 1) : 1);
+}
+
+
+
