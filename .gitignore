@@ -1,8 +1,0 @@
-node_modules
-.env
-jstest.js
-testing.ts
-.gitignore
-.eslintcache
-package-lock.json
-
